@@ -11,14 +11,35 @@ class Blackjack:
         print("Player:", " ".join(f"{r}{s}" for r, s in player),
               "=", hand_value(player))
 
+
     def round(self):
         deck = Deck()
         player = [deck.draw(), deck.draw()]
         dealer = [deck.draw(), deck.draw()]
         self.show(player, dealer)
 
+        # Check for Blackjack on the initial two cards.
+        player_bj = len(player) == 2 and hand_value(player) == 21
+        dealer_bj = len(dealer) == 2 and hand_value(dealer) == 21
+
+        if player_bj or dealer_bj:
+            self.show(player, dealer, hide=False)
+
+            if player_bj and dealer_bj:
+                print("Push. Both have Blackjack.")
+            elif player_bj:
+                self.chips += 10
+                print("Blackjack! Player wins.")
+            else:
+                self.chips -= 10
+                print("Dealer has Blackjack. Dealer wins.")
+
+            return True
+
+        # Player's turn.
         while hand_value(player) < 21:
             key = input("[h]it [s]tand [q]uit: ").strip().lower()
+
             if key == "q":
                 return False
             if key == "s":
@@ -26,14 +47,19 @@ class Blackjack:
             if key == "h":
                 player.append(deck.draw())
                 self.show(player, dealer)
+
                 if hand_value(player) > 21:
+                    self.show(player, dealer, hide=False)
                     print("Bust.")
                     return True
+
+        # Dealer draws until reaching at least 17.
         while hand_value(dealer) < 17:
             dealer.append(deck.draw())
 
         self.show(player, dealer, hide=False)
         pv, dv = hand_value(player), hand_value(dealer)
+
         if dv > 21 or pv > dv:
             self.chips += 10
             print("Player wins.")
@@ -42,6 +68,7 @@ class Blackjack:
             print("Dealer wins.")
         else:
             print("Push.")
+
         return True
 
     def run(self):
