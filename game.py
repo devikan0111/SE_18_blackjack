@@ -13,11 +13,14 @@ class Blackjack:
 
 
     def round(self):
-        print("\nChips:", self.chips)
+        print("\nChips at start:", self.chips)
 
         # Ask for a valid bet.
         while True:
-            raw_bet = input("Place your bet: ").strip()
+            raw_bet = input("Place your bet (or q to quit): ").strip().lower()
+
+            if raw_bet == "q":
+                return False
 
             try:
                 bet = int(raw_bet)
@@ -35,6 +38,13 @@ class Blackjack:
         deck = Deck()
         player = [deck.draw(), deck.draw()]
         dealer = [deck.draw(), deck.draw()]
+
+        # Safely handle an exhausted deck.
+        if None in player or None in dealer:
+            print("Deck is empty. Round cancelled; chips unchanged.")
+            print("Chips remaining:", self.chips)
+            return True
+
         self.show(player, dealer)
 
         # Settle the wager once when the round ends.
@@ -45,10 +55,24 @@ class Blackjack:
                 self.chips -= bet
 
             print(message)
-            print("Chips after round:", self.chips)
+            print("Chips remaining:", self.chips)
             return True
 
-        # Check for Blackjack on the initial two cards.
+        # Draw a card and report the new total.
+        def draw_card(hand, who):
+            card = deck.draw()
+
+            if card is None:
+                print("Deck is empty. Round cancelled; chips unchanged.")
+                print("Chips remaining:", self.chips)
+                return False
+
+            hand.append(card)
+            rank, suit = card
+            print(f"{who} drew {rank}{suit}. New total: {hand_value(hand)}")
+            return True
+
+        # Check for natural Blackjack.
         player_bj = len(player) == 2 and hand_value(player) == 21
         dealer_bj = len(dealer) == 2 and hand_value(dealer) == 21
 
@@ -69,19 +93,24 @@ class Blackjack:
 
             if key == "q":
                 return False
-            if key == "s":
+            elif key == "s":
                 break
-            if key == "h":
-                player.append(deck.draw())
+            elif key == "h":
+                if not draw_card(player, "Player"):
+                    return True
+
                 self.show(player, dealer)
 
                 if hand_value(player) > 21:
                     self.show(player, dealer, hide=False)
-                    return finish("loss", "Bust.")
+                    return finish("loss", "Player busts.")
+            else:
+                print("Invalid command. Enter h, s, or q.")
 
         # Dealer draws until reaching at least 17.
         while hand_value(dealer) < 17:
-            dealer.append(deck.draw())
+            if not draw_card(dealer, "Dealer"):
+                return True
 
         self.show(player, dealer, hide=False)
         pv, dv = hand_value(player), hand_value(dealer)
@@ -105,7 +134,14 @@ class Blackjack:
                 print("Game Over! You have no chips left.")
                 return
 
-            if input("Play again? [y/n]: ").strip().lower() != "y":
-                return
+            while True:
+                answer = input("Play again? [y/n]: ").strip().lower()
+
+                if answer == "q" or answer == "n":
+                    return
+                elif answer == "y":
+                    break
+                else:
+                    print("Invalid choice. Enter y, n, or q.")
 
         print("Game Over! You have no chips left.")
