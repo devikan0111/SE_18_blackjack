@@ -13,7 +13,7 @@ https://github.com/devikan0111/SE_18_blackjack
 | `before.mp4` | Video of the original code, before any changes |
 | `after.mp4` | Video of the final code, after all changes |
 | `main.py`, `game.py`, `cards.py`, `requirements.txt` | Updated code |
-| `Lab4_chat_history.pdf` | Exported chat history with prompts and explanations |
+| `PES1UG24AM080_Chat_History.pdf` | Exported chat history with prompts and explanations |
 
 ## Before video (`before.mp4`)
 
